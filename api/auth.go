@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -41,6 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		tokenString, err := c.Cookie("auth_token") // Read JWT from cookie
+		log.Println("tokenString", tokenString)
 		if err != nil {
 			fmt.Println("tokenString", tokenString)
 			fmt.Println("err", err)
@@ -54,6 +56,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method")
 			}
+			log.Println("secretKey: ", secretKey)
 			return secretKey, nil
 		})
 
@@ -92,10 +95,23 @@ func getReqInfo(c *gin.Context) RequestInfo {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// origin := c.Request.Header.Get("Origin")
+
+		// allowedOrigins := map[string]bool{
+		// 	"http://localhost:3004": true,
+		// }
+
+		// if allowedOrigins[origin] {
+		// 	c.Header("Access-Control-Allow-Origin", origin)
+		// }
+
+		// c.Header("Content-Type", "application/json") // Tambahkan ini
 		c.Header("Access-Control-Allow-Origin", "http://localhost:3004")
 		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Accept")
-		c.Header("Access-Control-Allow-Methods", "POST, HEAD, PATCH, DELETE, OPTIONS, GET, PUT")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST, HEAD, PATCH, DELETE, GET, PUT")
+
+		// c.Header("Access-Control-Allow-Cookie", "true")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)

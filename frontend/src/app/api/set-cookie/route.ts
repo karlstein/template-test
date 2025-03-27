@@ -6,6 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const token = body.token;
+    console.log("TOKEN SET COOKIE >> ",token);
+    
 
     if (!token) {
       throw { status: 400, message: "token is required" };
@@ -21,7 +23,15 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({ message: `Cookie set` });
 
     // TODO - 1.3 assign token into cache named auth_token
+    response.headers.set(
+      "Set-Cookie",
+      `auth_token=${token}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=86400`
+    );
 
+    const tokenCache = new Map()
+    tokenCache.set("auth_token", token);
+    console.log("Cache: ", tokenCache);
+    
     return response;
   } catch (error: any) {
     return NextResponse.json(

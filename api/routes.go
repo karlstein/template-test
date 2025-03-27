@@ -12,7 +12,6 @@ func setupRoutes(r *gin.Engine) {
 
 	r.POST("/login", userLogin)
 	r.POST("/logout", userLogout)
-	// r.GET("/cred/project", getAllProject)
 
 	protected := r.Group("/cred")
 	protected.Use(AuthMiddleware())

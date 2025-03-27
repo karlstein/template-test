@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useMemo, useState } from "react";
+import React, { use, useEffect, useMemo, useState } from "react";
 import ProjectCard from "../project.card";
 import UpdateList from "./update-list";
 import { UpdateListPageProps } from "@/app/project/update/[project]/page";
@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import Button from "@/components/button";
 import PlusSvg from "@/assets/svgs/plus";
 import GenerateKeyModal from "./generate-key-modal";
+import axios from "axios";
 
 const ProjectUpdateMain = (props: UpdateListPageProps) => {
   const propParams = use(props.params);
@@ -42,6 +43,41 @@ const ProjectUpdateMain = (props: UpdateListPageProps) => {
   }, [propParams.project]);
 
   // TODO - 2.2 You should get project updates data here and to pass it into state.
+  // useEffect(() => {
+  //   if (!project?.id) return;
+
+  //   const fetchProjectUpdates = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `http://localhost:3005/cred/project/updates?projectID=${project.id}`
+  //       );
+  //       setProjectUpdates(response.data.data);
+  //     } catch (error) {
+  //       console.error("Failed to fetch project updates", error);
+  //       toast("Failed to fetch project updates", { type: "error" });
+  //     }
+  //   };
+
+  //   fetchProjectUpdates();
+  // }, [project?.id]);
+  useEffect(() => {
+    if (!project?.id) return;
+  
+    const fetchProjectUpdates = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3005/project/updates?projectID=${project.id}&limit=10&offset=0`
+        );
+        setProjectUpdates(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch project updates", error);
+        toast("Failed to fetch project updates", { type: "error" });
+      }
+    };
+  
+    fetchProjectUpdates();
+  }, [project?.id]);
+  
 
   const renderModal = () => {
     return (

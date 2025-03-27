@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	loadEnv("")
+	loadEnv(".env")
 	initDB()
 	initS3()
 
@@ -16,7 +16,7 @@ func main() {
 	router.Use(CORSMiddleware())
 	setupRoutes(router)
 
-	port := getEnv("SERVER_PORT", "8080")
+	port := getEnv("SERVER_PORT", "3005")
 	log.Printf("🚀 CodePush server running on port %s", port)
 
 	if err := router.Run(fmt.Sprintf(":%s", port)); err != nil {

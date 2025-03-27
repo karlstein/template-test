@@ -18,6 +18,8 @@ const ProjectList = () => {
         });
         console.error("cp-server - getData", error);
         setData([]);
+        console.log(setData);
+        
       });
   }, []);
 

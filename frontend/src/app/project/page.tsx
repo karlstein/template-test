@@ -7,6 +7,8 @@ const Project = async () => {
   const authToken = await getCookie("auth_token");
   const hostname = await getCookie("hostname");
 
+  console.log("Cookie Auth-Token: ", getCookie("auth_token") );  
+
   return (
     <Fragment>
       <Header authTokenCookie={authToken} hostnameCookie={hostname} />

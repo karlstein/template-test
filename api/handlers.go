@@ -100,7 +100,10 @@ type LoginModel struct {
 func userLogin(c *gin.Context) {
 	var login LoginModel
 
-	fmt.Println("userLogin")
+	// fmt.Println("userLogin")
+
+	// body, _ := ioutil.ReadAll(c.Request.Body)
+	// fmt.Println("Raw Request Body:", string(body))
 
 	if err := c.ShouldBindJSON(&login); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -149,21 +152,47 @@ func getAllProject(c *gin.Context) {
 		LEFT JOIN teams t ON t.project_id = p.id
 		WHERE t.user_id = @user_id 
 		OR p.user_id = @user_id`,
-		sql.Named("user_id", 1)).
+		sql.Named("user_id", reqInfo.UserID)).
 		Scan(&projects)
 
 	if result.Error != nil || len(projects) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No project found"})
 		return
 	}
+	fmt.Println("Project di Load: ", projects)
 
 	c.JSON(http.StatusOK, gin.H{"data": projects})
 }
 
 // Get project with update list
+// func getProjectUpdates(c *gin.Context) {
+// 	reqInfo := getReqInfo(c)
+
+// 	if reqInfo.UserID == 0 {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in token"})
+// 		return
+// 	}
+
+// 	var params ProjectUpdatesParamsModel
+// 	if err := c.BindQuery(&params); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request Error"})
+// 		return
+// 	}
+
+// 	if params.ProjectID == 0 {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Project not found"})
+// 		return
+// 	}
+
+// 	var projectUpdates ProjectUpdatesModel
+// 	// TODO - 2.1 Get project and updates with params, limit and offset.
+
+// 	c.JSON(http.StatusOK, gin.H{"data": projectUpdates})
+// }
+
 func getProjectUpdates(c *gin.Context) {
 	reqInfo := getReqInfo(c)
-
+	log.Println("LALALAL")
 	if reqInfo.UserID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in token"})
 		return
@@ -179,9 +208,59 @@ func getProjectUpdates(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Project not found"})
 		return
 	}
+	log.Println("params.ProjectID", params.ProjectID)
+	var project Project
+	result := db.First(&project, params.ProjectID)
+	log.Println("result", result)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		return
+	}
 
-	var projectUpdates ProjectUpdatesModel
-	// TODO - 2.1 Get project and updates with params, limit and offset.
+	var updates []Update
+	query := db.Where("project_id = ?", params.ProjectID)
+
+	if params.Version != "" {
+		query = query.Where("version = ?", params.Version)
+	}
+	if params.Platform != "" {
+		query = query.Where("platform = ?", params.Platform)
+	}
+	if params.Environment != "" {
+		query = query.Where("environment = ?", params.Environment)
+	}
+	if params.Checksum != "" {
+		query = query.Where("checksum = ?", params.Checksum)
+	}
+	if params.FileName != "" {
+		query = query.Where("file_name = ?", params.FileName)
+	}
+	if params.Mandatory != nil {
+		query = query.Where("mandatory = ?", *params.Mandatory)
+	}
+
+	// Handle pagination
+	limit := params.Limit
+	if limit == 0 {
+		limit = 10 // Default limit
+	}
+	offset := (params.Page - 1) * limit
+
+	query = query.Order("created_at DESC").Limit(limit).Offset(offset).Find(&updates)
+	log.Println("query", query)
+
+	if query.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updates"})
+		return
+	}
+
+	projectUpdates := ProjectUpdatesModel{
+		Project: project,
+		Update:  updates,
+	}
+	log.Println("projectUpdates", projectUpdates)
+
+	// projectUpdates := updates
 
 	c.JSON(http.StatusOK, gin.H{"data": projectUpdates})
 }

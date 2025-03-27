@@ -13,3 +13,4 @@ deployment
 .env
 
 /answer
+node_modules

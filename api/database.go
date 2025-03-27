@@ -15,8 +15,10 @@ var db *gorm.DB
 func initDB() {
 	host := getEnv("POSTGRES_HOST", "localhost")
 	port := getEnv("POSTGRES_PORT", "5432")
-	user := getEnv("POSTGRES_USER", "codepush")
-	password := getEnv("POSTGRES_PASSWORD", "securepassword")
+	// user := getEnv("POSTGRES_USER", "codepush")
+	user := getEnv("POSTGRES_USER", "postgres")
+	// password := getEnv("POSTGRES_PASSWORD", "securepassword")
+	password := getEnv("POSTGRES_PASSWORD", "")
 	dbname := getEnv("POSTGRES_DB", "codepushdb")
 	nomigrate := getEnv("POSTGRES_NOMIGRATE", "true")
 
